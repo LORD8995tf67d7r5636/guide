@@ -1,33 +1,105 @@
-# Introduction
+```js
+const { Client, GatewayIntentBits, ActivityType, EmbedBuilder,TextInputBuilder, ActionRowBuilder,ModalBuilder,ButtonBuilder, ButtonStyle, TextInputStyle } = require("discord.js");
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
 
-If you're reading this, it probably means you want to learn how to make a bot with discord.js. Awesome! You've come to the right place.
-This guide will teach you things such as:
-- How to get a bot [up and running](/preparations/) from scratch;
-- How to properly [create](/creating-your-bot/), [organize](/creating-your-bot/command-handling.md), and expand on your commands;
-- In-depth explanations and examples regarding popular topics (e.g. [reactions](/popular-topics/reactions.md), [embeds](/popular-topics/embeds.md), [canvas](/popular-topics/canvas.md));
-- Working with databases (e.g. [sequelize](/sequelize/) and [keyv](/keyv/));
-- Getting started with [sharding](/sharding/);
-- And much more.
+client.on("ready", () => {
+    console.log(`${client.user.username} Is Ready`)
+    client.user.setActivity(`+setup`, { type: ActivityType.Playing })
+});
 
-This guide will also cover subjects like common errors and how to solve them, keeping your code clean, setting up a proper development environment, etc.
-Sounds good? Great! Let's get started, then.
+ client.login("");// token is here ok !?
 
-## Before you begin...
+ process.on('unhandledRejection', error => console.log(error));
+ process.on('uncaughtException', error => console.log(error));
 
-Alright, making a bot is cool and all, but there are some prerequisites to it. To create a bot with discord.js, you should have a fairly decent grasp of JavaScript itself.
-While you _can_ make a bot with very little JavaScript and programming knowledge, trying to do so without understanding the language first will only hinder you. You may get stuck on many uncomplicated issues, struggle with solutions to incredibly easy problems, and all-in-all end up frustrated. Sounds pretty annoying.
 
-If you don't know JavaScript but would like to learn about it, here are a few links to help get you started:
 
-* [Eloquent JavaScript, a free online book](http://eloquentjavascript.net/)
-* [JavaScript.info, a modern javascript tutorial](https://javascript.info/)
-* [Codecademy's interactive JavaScript course](https://www.codecademy.com/learn/introduction-to-javascript)
-* [Nodeschool, for both JavaScript and Node.js lessons](https://nodeschool.io/)
-* [MDN's JavaScript guide and full documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-* [Google, your best friend](https://google.com)
+client.on("messageCreate", async message => {
+    if(message.content === "+setup"){
+        const allowedRole = message.guild.roles.cache.get('1139844965996957716');
+        if (!allowedRole || !message.member.roles.cache.has(allowedRole.id)) {
+            return message.reply('**عذراً ، لست من مسؤولين الادارة لكي تستخدم الأمر.**');
+        }
+const row = new ActionRowBuilder()
+.addComponents(
+new ButtonBuilder()
+    .setCustomId("log")
+    .setLabel("تسجيل دخول")
+    .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+    .setCustomId("leave")
+    .setLabel("تسجيل خروج")
+    .setStyle(ButtonStyle.Secondary)
+)
+message.channel.send({ components: [row] })
+}
+});
 
-Take your pick, learn some JavaScript, and once you feel like you're confident enough to make a bot, come back and get started!
 
-<a href="https://www.netlify.com">
-	<img src="https://www.netlify.com/img/global/badges/netlify-color-accent.svg" alt="Deploys by Netlify" />
-</a>
+
+client.on('interactionCreate', async interaction => {
+if(!interaction.isButton()) return;
+    if(interaction.customId == "log"){
+const channel = client.channels.cache.get('1163880474846953523');
+        
+        
+        
+        const embed = new EmbedBuilder()
+        .setDescription(`**تسجيل دخول\n \nالشخص:\n${interaction.user}\n \nالوقت:\n${new Date().toLocaleString()}**`)
+        .setAuthor({ name : interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true })})
+        .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
+        await interaction.reply({ content: "تم تسجيل دخولك بنجاح", ephemeral: true })
+        channel.send({ embeds: [embed] })
+        
+} else if(interaction.customId == "leave"){   
+    
+    const modal = new ModalBuilder()
+            .setCustomId('send')
+            .setTitle('التقرير اليومي');
+
+        const tokenBot = new TextInputBuilder()
+            .setCustomId('leaves')
+            .setLabel("تقرير الخروج")
+            .setMinLength(1)
+            .setMaxLength(3000)
+            .setPlaceholder("أكتب تقريرك هنا")
+            .setStyle(TextInputStyle.Short);
+    const rows = [
+            new ActionRowBuilder().addComponents(tokenBot) ]
+        
+        modal.addComponents(...rows);
+        interaction.showModal(modal);
+}
+});
+
+
+
+
+client.on('interactionCreate', async modal => {
+    if(!modal.isModalSubmit()) return;
+    if(modal.customId == "send") {
+     const channel = client.channels.cache.get("1163880474846953523");
+        
+       
+        
+     const leaves = modal.fields.getTextInputValue("leaves")
+     const embed = new EmbedBuilder()
+        .setDescription(`**تسجيل خروج\n \nالشخص:${modal.user}\n \nالوقت:\n${new Date().toLocaleString()}\n\nالتقرير:\n${leaves}**`)
+        .setAuthor({ name: modal.user.username,iconURL: modal.user.displayAvatarURL({ dynamic: true })})
+        .setThumbnail(modal.guild.iconURL({ dynamic: true }))
+     modal.reply({content:"تم تسجيل خروجك بنجاح" , ephemeral:true})
+        
+     channel.send({ embeds: [embed] })
+   }
+});
+ 
+
+client.login("")
+```
